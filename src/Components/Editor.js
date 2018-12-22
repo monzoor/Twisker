@@ -1,12 +1,40 @@
 import React, { Component } from 'react';
 import { Editor } from 'slate-react';
-import { Value } from 'slate';
+import { Block, Value } from 'slate'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isKeyHotkey } from 'is-hotkey';
+import styled from '@emotion/styled';
 
 import initialValue from './value.json';
 import { Button, Icon, Toolbar } from './components';
 
+const Image = styled('img')`
+  display: block;
+  max-width: 100%;
+  max-height: 20em;
+  box-shadow: ${props => (props.selected ? '0 0 0 2px blue;' : 'none')};
+`;
+
+const schema = {
+    document: {
+        last: { type: 'paragraph' },
+        normalize: (editor, { code, node, child }) => {
+            switch (code) {
+            case 'last_child_type_invalid': {
+                const paragraph = Block.create('paragraph');
+                return editor.insertNodeByKey(node.key, node.nodes.size, paragraph);
+            }
+            default:
+                return null;
+            }
+        },
+    },
+    blocks: {
+        image: {
+            isVoid: true,
+        },
+    },
+};
 /**
  * Define the default node type.
  *
@@ -26,6 +54,24 @@ const isItalicHotkey = isKeyHotkey('mod+i');
 const isUnderlinedHotkey = isKeyHotkey('mod+u');
 const isCodeHotkey = isKeyHotkey('mod+`');
 
+/**
+ * A change function to standardize inserting images.
+ *
+ * @param {Editor} editor
+ * @param {String} src
+ * @param {Range} target
+ */
+
+const insertImage = (editor, src, target) => {
+    if (target) {
+        editor.select(target);
+    }
+
+    editor.insertBlock({
+        type: 'image',
+        data: { src },
+    });
+};
 
 class RichTextExample extends Component {
     state = {
@@ -119,7 +165,12 @@ class RichTextExample extends Component {
      */
 
     renderNode = (props, editor, next) => {
-        const { attributes, children, node } = props;
+        const {
+            attributes,
+            children,
+            node,
+            isFocused,
+        } = props;
 
         switch (node.type) {
         case 'block-quote':
@@ -134,6 +185,10 @@ class RichTextExample extends Component {
             return <li {...attributes}>{children}</li>;
         case 'numbered-list':
             return <ol {...attributes}>{children}</ol>;
+        case 'image': {
+            const src = node.data.get('src');
+            return <Image src={src} selected={isFocused} {...attributes} />;
+        }
         default:
             return next();
         }
@@ -227,6 +282,13 @@ class RichTextExample extends Component {
         const { value } = editor;
         const { document } = value;
 
+        if (['image'].includes(type)) {
+            console.log('----');
+            const src = window.prompt('Enter the URL of the image:');
+            if (!src) return;
+            this.editor.command(insertImage, src);
+        }
+
         // Handle everything but list buttons.
         if (type !== 'bulleted-list' && type !== 'numbered-list') {
             const isActive = this.hasBlock(type);
@@ -282,6 +344,8 @@ class RichTextExample extends Component {
                     {this.renderBlockButton('block-quote', 'format_quote')}
                     {this.renderBlockButton('numbered-list', 'format_list_numbered')}
                     {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
+                    {this.renderBlockButton('image', 'image')}
+                    {this.renderBlockButton('image', 'cloud_upload')}
                 </Toolbar>
                 <Editor
                   spellCheck
@@ -293,6 +357,7 @@ class RichTextExample extends Component {
                   onKeyDown={this.onKeyDown}
                   renderNode={this.renderNode}
                   renderMark={this.renderMark}
+                  schema={schema}
                 />
             </div>
         );
