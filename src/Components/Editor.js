@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Editor } from 'slate-react';
-import { Block, Value } from 'slate'
+import { Block, Value } from 'slate';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isKeyHotkey } from 'is-hotkey';
 import styled from '@emotion/styled';
@@ -67,8 +67,9 @@ const insertImage = (editor, src, target) => {
         editor.select(target);
     }
 
-    editor.insertBlock({
+    editor.insertInline({
         type: 'image',
+        isVoid: true,
         data: { src },
     });
 };
@@ -149,7 +150,16 @@ class RichTextExample extends Component {
                 isActive = this.hasBlock('list-item') && parent && parent.type === type;
             }
         }
-
+        if (['imageBrowser'].includes(type)) {
+            return (
+                <div className="upload-btn-wrapper">
+                    <Button active={isActive}>
+                        <Icon>{icon}</Icon>
+                        <input type="file" id="input-button" onChange={event => this.onClickBlock(event, type)} />
+                    </Button>
+                </div>
+            );
+        }
         return (
             <Button active={isActive} onMouseDown={event => this.onClickBlock(event, type)}>
                 <Icon>{icon}</Icon>
@@ -171,7 +181,6 @@ class RichTextExample extends Component {
             node,
             isFocused,
         } = props;
-
         switch (node.type) {
         case 'block-quote':
             return <blockquote {...attributes}>{children}</blockquote>;
@@ -185,7 +194,13 @@ class RichTextExample extends Component {
             return <li {...attributes}>{children}</li>;
         case 'numbered-list':
             return <ol {...attributes}>{children}</ol>;
+        case 'imageBrowser': {
+            console.log('-----bb', node.data);
+            const src = node.data.get('src');
+            return <Image src={src} selected={isFocused} {...attributes} />;
+        }
         case 'image': {
+            console.log('-----im', node.data);
             const src = node.data.get('src');
             return <Image src={src} selected={isFocused} {...attributes} />;
         }
@@ -283,10 +298,42 @@ class RichTextExample extends Component {
         const { document } = value;
 
         if (['image'].includes(type)) {
-            console.log('----');
+            console.log('----im');
             const src = window.prompt('Enter the URL of the image:');
             if (!src) return;
             this.editor.command(insertImage, src);
+        }
+
+        if (['imageBrowser'].includes(type)) {
+            // console.log('----b', event.currentTarget.files[0].type.split('/'));
+            // const reader = new FileReader();
+            // const [mime] = event.currentTarget.files[0].type.split('/');
+            // console.log(mime);
+            // if (mime !== 'image') {
+            //     console.log('wrong file');
+            //     return;
+            // }
+
+            // reader.addEventListener('load', () => {
+            //     console.log(reader.result);
+            //     editor.command(insertImage, reader.result);
+            // });
+            // reader.readAsDataURL(event.currentTarget.files[0]);
+            // console.log(reader.readAsDataURL(event.currentTarget.files[0]))
+            const getBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+            getBase64(event.currentTarget.files[0]).then(
+                (data) => {
+                    setTimeout(() => {
+                        console.log(data);
+                        this.editor.command(insertImage, data);
+                    }, 50);
+                },
+            );
         }
 
         // Handle everything but list buttons.
@@ -345,7 +392,7 @@ class RichTextExample extends Component {
                     {this.renderBlockButton('numbered-list', 'format_list_numbered')}
                     {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
                     {this.renderBlockButton('image', 'image')}
-                    {this.renderBlockButton('image', 'cloud_upload')}
+                    {this.renderBlockButton('imageBrowser', 'cloud_upload')}
                 </Toolbar>
                 <Editor
                   spellCheck
