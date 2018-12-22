@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/core": "^10.0.5",
+    "@emotion/styled": "^10.0.5",
+    "immutable": "^4.0.0-rc.12",
     "node-sass": "^4.11.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "react-scripts": "2.1.1"
+    "react-emotion": "^10.0.0",
+    "react-scripts": "2.1.1",
+    "slate": "^0.44.9",
+    "slate-react": "^0.21.15"
   },
   "scripts": {
     "start": "react-scripts start",
