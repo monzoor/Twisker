@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Editor } from 'slate-react';
-import { Block, Value } from 'slate';
+import { Value } from 'slate';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isKeyHotkey } from 'is-hotkey';
 import styled from '@emotion/styled';
@@ -16,19 +16,6 @@ const Image = styled('img')`
 `;
 
 const schema = {
-    document: {
-        last: { type: 'paragraph' },
-        normalize: (editor, { code, node, child }) => {
-            switch (code) {
-            case 'last_child_type_invalid': {
-                const paragraph = Block.create('paragraph');
-                return editor.insertNodeByKey(node.key, node.nodes.size, paragraph);
-            }
-            default:
-                return null;
-            }
-        },
-    },
     blocks: {
         image: {
             isVoid: true,
@@ -53,6 +40,8 @@ const isBoldHotkey = isKeyHotkey('mod+b');
 const isItalicHotkey = isKeyHotkey('mod+i');
 const isUnderlinedHotkey = isKeyHotkey('mod+u');
 const isCodeHotkey = isKeyHotkey('mod+`');
+const isTabHotkey = isKeyHotkey('tab');
+const isShiftTabHotkey = isKeyHotkey('shift+tab');
 
 /**
  * A change function to standardize inserting images.
@@ -69,7 +58,6 @@ const insertImage = (editor, src, target) => {
 
     editor.insertBlock({
         type: 'image',
-        isVoid: true,
         data: { src },
     });
 };
@@ -249,7 +237,70 @@ class RichTextExample extends Component {
     onKeyDown = (event, editor, next) => {
         let mark;
 
-        if (isBoldHotkey(event)) {
+        const { value } = editor;
+        const { document } = value;
+
+        const block = value.blocks.first();
+        const parent = block ? document.getParent(block.key) : null;
+
+        if (isTabHotkey(event)) {
+            const previousSibling = document.getPreviousSibling(block.key);
+            const type = !parent.type ? 'bulleted-list' : parent.type;
+            mark = type;
+
+            // If no previous sibling exists, return
+            if (!previousSibling) {
+                event.preventDefault();
+                return next();
+            }
+
+            // check whether it's already in 3rd level
+            const depth = document.getDepth(block.key);
+            if (depth > 3) {
+                event.preventDefault();
+                return next();
+            }
+
+            if (parent) {
+                editor.setBlocks('list-item').wrapBlock(type);
+            }
+        } else if (isShiftTabHotkey(event)) {
+            const type = !parent.type ? 'bulleted-list' : parent.type;
+            mark = type;
+
+            // if multi level list items are selected for shift+tab, then return
+            const firstBlockDepth = block && document.getDepth(block.key);
+            let multiLevelSelected = false;
+            value.blocks.map((currentKey) => {
+                const depth = document.getDepth(currentKey.key);
+                multiLevelSelected = !!(firstBlockDepth !== depth);
+                return true;
+            });
+            if (multiLevelSelected) return next();
+
+            // if first level list-items selected then, make paragraph
+            if (parent && typeof parent.type === 'undefined') {
+                editor
+                    .setBlocks(DEFAULT_NODE)
+                    .unwrapBlock('bulleted-list')
+                    .unwrapBlock('numbered-list');
+                return next();
+            }
+
+            const isActive = this.hasBlock('list-item') && block && (parent.type === 'numbered-list' || parent.type === 'bulleted-list');
+
+            if (isActive) {
+                editor
+                    .setBlocks('list-item')
+                    .unwrapBlock('bulleted-list')
+                    .unwrapBlock('numbered-list');
+            } else {
+                editor
+                    .setBlocks(DEFAULT_NODE)
+                    .unwrapBlock('bulleted-list')
+                    .unwrapBlock('numbered-list');
+            }
+        } else if (isBoldHotkey(event)) {
             mark = 'bold';
         } else if (isItalicHotkey(event)) {
             mark = 'italic';
