@@ -67,7 +67,7 @@ const insertImage = (editor, src, target) => {
         editor.select(target);
     }
 
-    editor.insertInline({
+    editor.insertBlock({
         type: 'image',
         isVoid: true,
         data: { src },
@@ -194,13 +194,7 @@ class RichTextExample extends Component {
             return <li {...attributes}>{children}</li>;
         case 'numbered-list':
             return <ol {...attributes}>{children}</ol>;
-        case 'imageBrowser': {
-            console.log('-----bb', node.data);
-            const src = node.data.get('src');
-            return <Image src={src} selected={isFocused} {...attributes} />;
-        }
         case 'image': {
-            console.log('-----im', node.data);
             const src = node.data.get('src');
             return <Image src={src} selected={isFocused} {...attributes} />;
         }
@@ -298,40 +292,25 @@ class RichTextExample extends Component {
         const { document } = value;
 
         if (['image'].includes(type)) {
-            console.log('----im');
             const src = window.prompt('Enter the URL of the image:');
             if (!src) return;
             this.editor.command(insertImage, src);
         }
 
         if (['imageBrowser'].includes(type)) {
-            // console.log('----b', event.currentTarget.files[0].type.split('/'));
-            // const reader = new FileReader();
-            // const [mime] = event.currentTarget.files[0].type.split('/');
-            // console.log(mime);
-            // if (mime !== 'image') {
-            //     console.log('wrong file');
-            //     return;
-            // }
-
-            // reader.addEventListener('load', () => {
-            //     console.log(reader.result);
-            //     editor.command(insertImage, reader.result);
-            // });
-            // reader.readAsDataURL(event.currentTarget.files[0]);
-            // console.log(reader.readAsDataURL(event.currentTarget.files[0]))
             const getBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
+                if (file.type !== 'image/jpeg') {
+                    alert('Wrong File! Only JPG.');
+                    return;
+                }
                 reader.readAsDataURL(file);
                 reader.onload = () => resolve(reader.result);
                 reader.onerror = error => reject(error);
             });
             getBase64(event.currentTarget.files[0]).then(
                 (data) => {
-                    setTimeout(() => {
-                        console.log(data);
-                        this.editor.command(insertImage, data);
-                    }, 50);
+                    this.editor.command(insertImage, data);
                 },
             );
         }
