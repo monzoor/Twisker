@@ -31,3 +31,10 @@ export const Toolbar = styled(Menu)`
   background-color: #3C4858;
   border-radius: 0.25rem !important;
 `;
+
+export const Image = styled('img')`
+display: block;
+max-width: 100%;
+max-height: 20em;
+box-shadow: ${props => (props.selected ? '0 0 0 2px blue;' : 'none')};
+`;

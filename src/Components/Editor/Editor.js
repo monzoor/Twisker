@@ -3,32 +3,18 @@ import { Editor } from 'slate-react';
 import { Value } from 'slate';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isKeyHotkey } from 'is-hotkey';
-import styled from '@emotion/styled';
 
 import initialValue from './value.json';
-import { Button, Icon, Toolbar } from './components';
+import DEFAULT_NODE from './_config';
+import schema from './_schema';
 
-const Image = styled('img')`
-  display: block;
-  max-width: 100%;
-  max-height: 20em;
-  box-shadow: ${props => (props.selected ? '0 0 0 2px blue;' : 'none')};
-`;
+import {
+    Button,
+    Icon,
+    Toolbar,
+    Image,
+} from './components';
 
-const schema = {
-    blocks: {
-        image: {
-            isVoid: true,
-        },
-    },
-};
-/**
- * Define the default node type.
- *
- * @type {String}
- */
-
-const DEFAULT_NODE = 'paragraph';
 
 /**
  * Define hotkey matchers.
@@ -62,17 +48,17 @@ const insertImage = (editor, src, target) => {
     });
 };
 
-class RichTextExample extends Component {
+class DemoEditor extends Component {
     state = {
         value: Value.fromJSON(initialValue),
     }
 
     /**
-   * Check if the current selection has a mark with `type` in it.
-   *
-   * @param {String} type
-   * @return {Boolean}
-   */
+    * Check if the current selection has a mark with `type` in it.
+    *
+    * @param {String} type
+    * @return {Boolean}
+    */
 
     hasMark = (type) => {
         const { value } = this.state;
@@ -80,11 +66,11 @@ class RichTextExample extends Component {
     }
 
     /**
-   * Check if the any of the currently selected blocks are of `type`.
-   *
-   * @param {String} type
-   * @return {Boolean}
-   */
+    * Check if the any of the currently selected blocks are of `type`.
+    *
+    * @param {String} type
+    * @return {Boolean}
+    */
 
     hasBlock = (type) => {
         const { value } = this.state;
@@ -92,22 +78,22 @@ class RichTextExample extends Component {
     }
 
     /**
-   * Store a reference to the `editor`.
-   *
-   * @param {Editor} editor
-   */
+    * Store a reference to the `editor`.
+    *
+    * @param {Editor} editor
+    */
 
     ref = (editor) => {
         this.editor = editor;
     }
 
     /**
-   * Render a mark-toggling toolbar button.
-   *
-   * @param {String} type
-   * @param {String} icon
-   * @return {Element}
-   */
+    * Render a mark-toggling toolbar button.
+    *
+    * @param {String} type
+    * @param {String} icon
+    * @return {Element}
+    */
 
     renderMarkButton = (type, icon) => {
         const isActive = this.hasMark(type);
@@ -120,18 +106,19 @@ class RichTextExample extends Component {
     }
 
     /**
-     * Render a block-toggling toolbar button.
-     *
-     * @param {String} type
-     * @param {String} icon
-     * @return {Element}
-     */
+    * Render a block-toggling toolbar button.
+    *
+    * @param {String} type
+    * @param {String} icon
+    * @return {Element}
+    */
 
     renderBlockButton = (type, icon) => {
         let isActive = this.hasBlock(type);
 
         if (['numbered-list', 'bulleted-list'].includes(type)) {
-            const { value: { document, blocks } } = this.state;
+            const { value } = this.state;
+            const { document, blocks } = value;
 
             if (blocks.size > 0) {
                 const parent = document.getParent(blocks.first().key);
@@ -156,11 +143,11 @@ class RichTextExample extends Component {
     }
 
     /**
-     * Render a Slate node.
-     *
-     * @param {Object} props
-     * @return {Element}
-     */
+    * Render a Slate node.
+    *
+    * @param {Object} props
+    * @return {Element}
+    */
 
     renderNode = (props, editor, next) => {
         const {
@@ -169,6 +156,7 @@ class RichTextExample extends Component {
             node,
             isFocused,
         } = props;
+
         switch (node.type) {
         case 'block-quote':
             return <blockquote {...attributes}>{children}</blockquote>;
@@ -192,11 +180,11 @@ class RichTextExample extends Component {
     }
 
     /**
-     * Render a Slate mark.
-     *
-     * @param {Object} props
-     * @return {Element}
-     */
+    * Render a Slate mark.
+    *
+    * @param {Object} props
+    * @return {Element}
+    */
 
     renderMark = (props, editor, next) => {
         const { children, mark, attributes } = props;
@@ -216,10 +204,10 @@ class RichTextExample extends Component {
     }
 
     /**
-     * On change, save the new `value`.
-     *
-     * @param {Editor} editor
-     */
+    * On change, save the new `value`.
+    *
+    * @param {Editor} editor
+    */
 
     onChange = ({ value }) => {
         this.setState({ value });
@@ -272,8 +260,8 @@ class RichTextExample extends Component {
             const firstBlockDepth = block && document.getDepth(block.key);
             let multiLevelSelected = false;
             value.blocks.map((currentKey) => {
-                const depth = document.getDepth(currentKey.key);
-                multiLevelSelected = !!(firstBlockDepth !== depth);
+                const currentDepth = document.getDepth(currentKey.key);
+                multiLevelSelected = !!(firstBlockDepth !== currentDepth);
                 return true;
             });
             if (multiLevelSelected) return next();
@@ -441,4 +429,4 @@ class RichTextExample extends Component {
     }
 }
 
-export default RichTextExample;
+export default DemoEditor;
