@@ -4,8 +4,8 @@ import styled from '@emotion/styled';
 export const Button = styled('span')`
   cursor: pointer;
   color: ${props => (props.reversed
-        ? props.active ? 'white' : '#aaa'
-        : props.active ? 'black' : '#ccc')};
+        ? props.active ? 'white' : '#0078FF'
+        : props.active ? '#00E89D' : 'white')};
 `;
 
 export const Icon = styled(({ className, ...rest }) => <span className={`material-icons ${className}`} {...rest} />)`
@@ -25,8 +25,9 @@ export const Menu = styled('div')`
 
 export const Toolbar = styled(Menu)`
   position: relative;
-  padding: 1px 18px 17px;
-  margin: 0 -20px;
-  border-bottom: 2px solid #eee;
+  padding: 10px 18px;
+  margin: 0px -15px;
   margin-bottom: 20px;
+  background-color: #3C4858;
+  border-radius: 0.25rem !important;
 `;

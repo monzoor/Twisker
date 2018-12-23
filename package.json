@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/core": "^10.0.5",
     "@emotion/styled": "^10.0.5",
+    "bootstrap": "^4.2.1",
     "immutable": "^4.0.0-rc.12",
     "node-sass": "^4.11.0",
     "react": "^16.7.0",
