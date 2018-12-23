@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import '../assets/scss/App.scss';
-import SlateEditor from './Editor';
+import SlateEditor from './Editor/Editor';
 import Header from './Common/Header';
 
 class App extends Component {
@@ -11,7 +11,7 @@ class App extends Component {
                 <div className="container pt-5">
                     <div className="row">
                         <div className="col-8 mx-auto border rounded">
-                            <SlateEditor className="rounded" />
+                            <SlateEditor />
                         </div>
                     </div>
                 </div>
