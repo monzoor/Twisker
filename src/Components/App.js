@@ -10,7 +10,7 @@ class App extends Component {
                 <Header />
                 <div className="container pt-5">
                     <div className="row">
-                        <div className="col-8 mx-auto border rounded">
+                        <div className="col-8 mx-auto border rounded pb-3">
                             <SlateEditor />
                         </div>
                     </div>

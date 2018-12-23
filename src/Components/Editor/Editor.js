@@ -51,6 +51,7 @@ const insertImage = (editor, src, target) => {
 class DemoEditor extends Component {
     state = {
         value: Value.fromJSON(initialValue),
+        openSettings: false,
     }
 
     /**
@@ -389,14 +390,21 @@ class DemoEditor extends Component {
         }
     }
 
+    openSettings = () => {
+        const { openSettings } = this.state;
+        this.setState(prevState => ({
+            openSettings: !prevState.openSettings,
+        }));
+        console.log(openSettings);
+    }
     /**
-   * Render.
-   *
-   * @return {Element}
-   */
+    * Render.
+    *
+    * @return {Element}
+    */
 
     render() {
-        const { value } = this.state;
+        const { value, openSettings } = this.state;
         return (
             <div>
                 <Toolbar>
@@ -411,6 +419,17 @@ class DemoEditor extends Component {
                     {this.renderBlockButton('bulleted-list', 'format_list_bulleted')}
                     {this.renderBlockButton('image', 'image')}
                     {this.renderBlockButton('imageBrowser', 'cloud_upload')}
+                    <div className="float-right">
+                        <div className="dropdown">
+                            <button onClick={this.openSettings} className="btn btn-sm" type="button">
+                                <Icon className="text-success">settings</Icon>
+                            </button>
+                            
+                            <div className={`dropdown-menu dropdown-menu-right ${openSettings ? 'd-block' : 'd-none'}`}>
+                                <div className="dropdown-item">Action</div>
+                            </div>
+                        </div>
+                    </div>
                 </Toolbar>
                 <Editor
                   spellCheck
