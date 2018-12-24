@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "author": "Monzoor Morshed Mahmud",
-  "homepage": "/",
+  "homepage": "http://monzoor.github.io/twisker/",
   "dependencies": {
     "@emotion/core": "^10.0.5",
     "@emotion/styled": "^10.0.5",
     "bootstrap": "^4.2.1",
+    "gh-pages": "^2.0.1",
     "image-extensions": "^1.1.0",
     "immutable": "^4.0.0-rc.12",
     "is-url": "^1.2.4",
@@ -26,7 +27,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
