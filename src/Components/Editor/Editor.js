@@ -48,12 +48,23 @@ const insertImage = (editor, src, target) => {
     });
 };
 
+const storedValue = JSON.parse(localStorage.getItem('data'));
+const data = Value.fromJSON(storedValue || initialValue);
+
 class DemoEditor extends Component {
     state = {
-        value: Value.fromJSON(initialValue),
+        value: data,
         openSettings: false,
+        nodeLimit: localStorage.getItem('nodeLimit') || 0,
+        saveButtonDisabled: false,
     }
 
+    componentDidMount() {
+        const { nodeLimit } = this.state;
+        this.setState({
+            saveButtonDisabled: !!(parseInt(nodeLimit, 10) !== 0 && this.blockCounter() > parseInt(nodeLimit, 10)),
+        });
+    }
     /**
     * Check if the current selection has a mark with `type` in it.
     *
@@ -211,7 +222,11 @@ class DemoEditor extends Component {
     */
 
     onChange = ({ value }) => {
-        this.setState({ value });
+        const { nodeLimit } = this.state;
+        this.setState({
+            saveButtonDisabled: !!(parseInt(nodeLimit, 10) !== 0 && this.blockCounter() > parseInt(nodeLimit, 10)),
+            value,
+        });
     }
 
     /**
@@ -390,13 +405,38 @@ class DemoEditor extends Component {
         }
     }
 
-    openSettings = () => {
-        const { openSettings } = this.state;
+    openSettingsTrigger = () => {
         this.setState(prevState => ({
             openSettings: !prevState.openSettings,
         }));
-        console.log(openSettings);
     }
+
+    setNodeLimit = (e) => {
+        e.preventDefault();
+        const { value } = e.target;
+        this.setState({
+            nodeLimit: value,
+            saveButtonDisabled: !!(parseInt(value, 10) !== 0 && this.blockCounter() > parseInt(value, 10)),
+        });
+    };
+
+    saveNodeLimit = () => {
+        const { nodeLimit } = this.state;
+        localStorage.setItem('nodeLimit', nodeLimit);
+    }
+
+    blockCounter = () => {
+        const { editor } = this;
+        const { value } = editor;
+        return value.document.getBlocks().size;
+    }
+
+    saveData = () => {
+        const { value } = this.state;
+        const data = JSON.stringify(value.toJSON())
+        localStorage.setItem('data', data);
+    }
+
     /**
     * Render.
     *
@@ -404,7 +444,13 @@ class DemoEditor extends Component {
     */
 
     render() {
-        const { value, openSettings } = this.state;
+        const {
+            value,
+            openSettings,
+            nodeLimit,
+            saveButtonDisabled,
+        } = this.state;
+
         return (
             <div>
                 <Toolbar>
@@ -421,15 +467,26 @@ class DemoEditor extends Component {
                     {this.renderBlockButton('imageBrowser', 'cloud_upload')}
                     <div className="float-right">
                         <div className="dropdown">
-                            <button onClick={this.openSettings} className="btn btn-sm" type="button">
+                            <button onClick={this.openSettingsTrigger} className="btn btn-sm" type="button">
                                 <Icon className="text-success">settings</Icon>
                             </button>
-                            
                             <div className={`dropdown-menu dropdown-menu-right ${openSettings ? 'd-block' : 'd-none'}`}>
-                                <div className="dropdown-item">Action</div>
+                                <div className="dropdown-item px-3">
+                                    <div className="form-group mb-2">
+                                        <label className="small text-muted mb-0" htmlFor="lineLimit">
+                                            Node limit (Keep 0 if there is no limit)
+                                            <input type="number" value={nodeLimit} name="lineLimit" onChange={this.setNodeLimit} className="form-control mt-2" id="lineLimit" placeholder="Enter number" />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="dropdown-item px-3">
+                                    <button onClick={this.saveNodeLimit} type="button" className="btn btn-sm btn-success float-right ml-2">Save</button>
+                                    <button onClick={this.openSettingsTrigger} type="button" className="btn btn-sm btn-light float-right">Cancel</button>
+                                </div>
                             </div>
                         </div>
                     </div>
+
                 </Toolbar>
                 <Editor
                   spellCheck
@@ -443,6 +500,9 @@ class DemoEditor extends Component {
                   renderMark={this.renderMark}
                   schema={schema}
                 />
+                <hr />
+                <button onClick={this.saveData} disabled={`${saveButtonDisabled ? 'disabled' : ''}`} type="button" className="btn btn-success float-right ml-2">Save</button>
+                <button type="button" className="btn btn-danger float-right">Cancel</button>
             </div>
         );
     }

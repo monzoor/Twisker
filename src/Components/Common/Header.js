@@ -6,7 +6,7 @@ import React from 'react';
 const Header = () => (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <div className="mx-auto">
-            <div className="navbar-brand mx-auto">Twisker Demo</div>
+            <div className="navbar-brand mx-auto">&nbps;</div>
         </div>
     </nav>
 );
