@@ -1,7 +1,9 @@
 {
-  "name": "test",
-  "version": "0.1.0",
+  "name": "slatejs-demo",
+  "version": "1.0.0",
   "private": true,
+  "author": "Monzoor Morshed Mahmud",
+  "homepage": "/",
   "dependencies": {
     "@emotion/core": "^10.0.5",
     "@emotion/styled": "^10.0.5",
