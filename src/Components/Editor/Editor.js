@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import { Editor } from 'slate-react';
+import { Editor, getEventRange, getEventTransfer } from 'slate-react';
 import { Value } from 'slate';
 import SweetAlert from 'react-bootstrap-sweetalert';
 import { withAlert } from 'react-alert';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isKeyHotkey } from 'is-hotkey';
+import imageExtensions from 'image-extensions';
+import isUrl from 'is-url';
 import initialValue from './value.json';
 import DEFAULT_NODE from './_config';
 import schema from './_schema';
@@ -29,6 +31,15 @@ const isUnderlinedHotkey = isKeyHotkey('mod+u');
 const isCodeHotkey = isKeyHotkey('mod+`');
 const isTabHotkey = isKeyHotkey('tab');
 const isShiftTabHotkey = isKeyHotkey('shift+tab');
+
+/*
+* A function to determine whether a URL has an image extension.
+*
+* @param {String} url
+* @return {Boolean}
+*/
+
+const isImage = url => (!!imageExtensions.find(url.endsWith));
 
 /**
  * A change function to standardize inserting images.
@@ -383,7 +394,7 @@ class DemoEditor extends Component {
                     hideAlert();
                 }}
               onCancel={() => hideAlert()}
-                >
+            >
                 &nbsp;
             </SweetAlert>
         );
@@ -517,6 +528,47 @@ class DemoEditor extends Component {
     }
 
     /**
+   * On drop, insert the image wherever it is dropped.
+   *
+   * @param {Event} event
+   * @param {Editor} editor
+   * @param {Function} next
+   */
+
+    onDropOrPaste = (event, editor, next) => {
+        const target = getEventRange(event, editor);
+        if (!target && event.type === 'drop') return next();
+
+        const transfer = getEventTransfer(event);
+        const { type, text, files } = transfer;
+
+        if (type === 'files') {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const file of files) {
+                const reader = new FileReader();
+                const [mime] = file.type.split('/');
+                if (mime !== 'image') continue;
+
+                reader.addEventListener('load', () => {
+                    editor.command(insertImage, reader.result, target);
+                });
+
+                reader.readAsDataURL(file);
+            }
+            return;
+        }
+
+        if (type === 'text') {
+            if (!isUrl(text)) return next();
+            if (!isImage(text)) return next();
+            editor.command(insertImage, text, target);
+            return;
+        }
+
+        next();
+    }
+
+    /**
      * Set current editor data in localstorage
      *
      */
@@ -524,6 +576,18 @@ class DemoEditor extends Component {
         const { value } = this.state;
         const currentData = JSON.stringify(value.toJSON());
         localStorage.setItem('data', currentData);
+    }
+
+    /**
+     * Reset unsaved data
+     * If no data in localstorage, get initial data
+     */
+    cancelChanges = () => {
+        const currentStoredData = JSON.parse(localStorage.getItem('data'));
+        const previousData = Value.fromJSON(currentStoredData || initialValue);
+        this.setState({
+            value: previousData,
+        });
     }
 
     /**
@@ -589,10 +653,12 @@ class DemoEditor extends Component {
                   renderNode={this.renderNode}
                   renderMark={this.renderMark}
                   schema={schema}
+                  onDrop={this.onDropOrPaste}
+                  onPaste={this.onDropOrPaste}
                 />
                 <hr />
                 <button onClick={this.saveData} disabled={`${saveButtonDisabled ? 'disabled' : ''}`} type="button" className="btn btn-success float-right ml-2">Save</button>
-                <button type="button" className="btn btn-danger float-right">Cancel</button>
+                <button onClick={this.cancelChanges} type="button" className="btn btn-danger float-right">Cancel</button>
                 {alert}
             </div>
         );
