@@ -6,11 +6,9 @@ import { withAlert } from 'react-alert';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isKeyHotkey } from 'is-hotkey';
-
 import initialValue from './value.json';
 import DEFAULT_NODE from './_config';
 import schema from './_schema';
-
 import {
     Button,
     Icon,
@@ -51,14 +49,18 @@ const insertImage = (editor, src, target) => {
     });
 };
 
+/**
+ * Read Data from localstorage or from json file
+ */
 const storedValue = JSON.parse(localStorage.getItem('data'));
 const data = Value.fromJSON(storedValue || initialValue);
+const storedNodeLimit = localStorage.getItem('nodeLimit');
 
 class DemoEditor extends Component {
     state = {
         value: data,
-        openSettings: false,
-        nodeLimit: localStorage.getItem('nodeLimit') || 0,
+        openSettingsMenu: false,
+        nodeLimit: storedNodeLimit || 0,
         saveButtonDisabled: false,
         alert: null,
         imageUrl: null,
@@ -66,6 +68,9 @@ class DemoEditor extends Component {
 
     componentDidMount() {
         const { nodeLimit } = this.state;
+        /**
+         * Disable save button on reload if current node excid the node limit
+         */
         this.setState({
             saveButtonDisabled: !!(parseInt(nodeLimit, 10) !== 0 && this.blockCounter() > parseInt(nodeLimit, 10)),
         });
@@ -73,6 +78,12 @@ class DemoEditor extends Component {
 
     componentDidUpdate(prevProps, prevState) {
         const { imageUrl } = this.state;
+        /**
+         * Reject url if there is no url
+         * Set url from prompt
+         * Show image in editor
+         *
+         */
         if (prevState.imageUrl !== imageUrl) {
             if (!imageUrl) return;
             this.editor.command(insertImage, imageUrl);
@@ -231,8 +242,9 @@ class DemoEditor extends Component {
 
     /**
     * On change, save the new `value`.
+    * Set save button disabled status
     *
-    * @param {Editor} editor
+    * @param {Object} value
     */
 
     onChange = ({ value }) => {
@@ -346,6 +358,10 @@ class DemoEditor extends Component {
         this.editor.toggleMark(type);
     }
 
+    /**
+     * Image URl prompt
+     *
+     */
     getImageUrlPrompt = () => {
         const hideAlert = () => {
             this.setState({
@@ -393,10 +409,17 @@ class DemoEditor extends Component {
         const { alert } = this.props;
 
         if (['image'].includes(type)) {
+            // Show URl prompt
             this.getImageUrlPrompt();
         }
 
         if (['imageBrowser'].includes(type)) {
+            /**
+             * Convert image in base64
+             * Validate Image type
+             *
+             * @param {File} file
+             */
             const getBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 if (file.type !== 'image/jpeg') {
@@ -409,6 +432,7 @@ class DemoEditor extends Component {
             });
             getBase64(event.currentTarget.files[0])
                 .then((imageData) => {
+                    // Show image in editor
                     editor.command(insertImage, imageData);
                 });
         }
@@ -448,12 +472,21 @@ class DemoEditor extends Component {
         }
     }
 
+    /**
+     * Show node limit set box
+     *
+     */
     openSettingsTrigger = () => {
         this.setState(prevState => ({
-            openSettings: !prevState.openSettings,
+            openSettingsMenu: !prevState.openSettingsMenu,
         }));
     }
 
+    /**
+     * Set node limit value
+     * Set save button disabled status
+     * @param {Event} event
+     */
     setNodeLimit = (e) => {
         e.preventDefault();
         const { value } = e.target;
@@ -463,17 +496,30 @@ class DemoEditor extends Component {
         });
     };
 
+    /**
+     * Set node limit in localstorage
+     *
+     */
     saveNodeLimit = () => {
         const { nodeLimit } = this.state;
         localStorage.setItem('nodeLimit', nodeLimit);
     }
 
+    /**
+     * Get current node size
+     *
+     * @return  {number}  current node size
+     */
     blockCounter = () => {
         const { editor } = this;
         const { value } = editor;
         return value.document.getBlocks().size;
     }
 
+    /**
+     * Set current editor data in localstorage
+     *
+     */
     saveData = () => {
         const { value } = this.state;
         const currentData = JSON.stringify(value.toJSON());
@@ -489,7 +535,7 @@ class DemoEditor extends Component {
     render() {
         const {
             value,
-            openSettings,
+            openSettingsMenu,
             nodeLimit,
             saveButtonDisabled,
             alert,
@@ -514,7 +560,7 @@ class DemoEditor extends Component {
                             <button onClick={this.openSettingsTrigger} className="btn btn-sm" type="button">
                                 <Icon className="text-success">settings</Icon>
                             </button>
-                            <div className={`dropdown-menu dropdown-menu-right ${openSettings ? 'd-block' : 'd-none'}`}>
+                            <div className={`dropdown-menu dropdown-menu-right ${openSettingsMenu ? 'd-block' : 'd-none'}`}>
                                 <div className="dropdown-item px-3">
                                     <div className="form-group mb-2">
                                         <label className="small text-muted mb-0" htmlFor="lineLimit">
@@ -525,7 +571,7 @@ class DemoEditor extends Component {
                                 </div>
                                 <div className="dropdown-item px-3">
                                     <button onClick={this.saveNodeLimit} type="button" className="btn btn-sm btn-success float-right ml-2">Save</button>
-                                    <button onClick={this.openSettingsTrigger} type="button" className="btn btn-sm btn-light float-right">Cancel</button>
+                                    <button onClick={this.openSettingsTrigger} type="button" className="btn btn-sm btn-light float-right">Close</button>
                                 </div>
                             </div>
                         </div>
@@ -553,5 +599,4 @@ class DemoEditor extends Component {
     }
 }
 
-// export default DemoEditor;
 export default withAlert(DemoEditor);
