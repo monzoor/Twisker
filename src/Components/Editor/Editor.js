@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Editor } from 'slate-react';
 import { Value } from 'slate';
+import SweetAlert from 'react-bootstrap-sweetalert';
+import { withAlert } from 'react-alert';
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isKeyHotkey } from 'is-hotkey';
 
@@ -57,6 +60,8 @@ class DemoEditor extends Component {
         openSettings: false,
         nodeLimit: localStorage.getItem('nodeLimit') || 0,
         saveButtonDisabled: false,
+        alert: null,
+        imageUrl: null,
     }
 
     componentDidMount() {
@@ -65,6 +70,15 @@ class DemoEditor extends Component {
             saveButtonDisabled: !!(parseInt(nodeLimit, 10) !== 0 && this.blockCounter() > parseInt(nodeLimit, 10)),
         });
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        const { imageUrl } = this.state;
+        if (prevState.imageUrl !== imageUrl) {
+            if (!imageUrl) return;
+            this.editor.command(insertImage, imageUrl);
+        }
+    }
+
     /**
     * Check if the current selection has a mark with `type` in it.
     *
@@ -332,6 +346,37 @@ class DemoEditor extends Component {
         this.editor.toggleMark(type);
     }
 
+    getImageUrlPrompt = () => {
+        const hideAlert = () => {
+            this.setState({
+                alert: null,
+            });
+        };
+        const getAlert = () => (
+            <SweetAlert
+              input
+              showCancel
+              cancelBtnBsStyle="default"
+              confirmBtnBsStyle="success"
+              title="Pleae enter image url"
+              placeHolder="Enter image url"
+              onConfirm={(value) => {
+                    this.setState({
+                        imageUrl: value,
+                    });
+                    hideAlert();
+                }}
+              onCancel={() => hideAlert()}
+                >
+                &nbsp;
+            </SweetAlert>
+        );
+
+        this.setState({
+            alert: getAlert(),
+        });
+    }
+
     /**
      * When a block button is clicked, toggle the block type.
      *
@@ -345,29 +390,27 @@ class DemoEditor extends Component {
         const { editor } = this;
         const { value } = editor;
         const { document } = value;
+        const { alert } = this.props;
 
         if (['image'].includes(type)) {
-            const src = window.prompt('Enter the URL of the image:');
-            if (!src) return;
-            this.editor.command(insertImage, src);
+            this.getImageUrlPrompt();
         }
 
         if (['imageBrowser'].includes(type)) {
             const getBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 if (file.type !== 'image/jpeg') {
-                    alert('Wrong File! Only JPG.');
+                    alert.error('Only JPEG file');
                     return;
                 }
                 reader.readAsDataURL(file);
                 reader.onload = () => resolve(reader.result);
                 reader.onerror = error => reject(error);
             });
-            getBase64(event.currentTarget.files[0]).then(
-                (data) => {
-                    this.editor.command(insertImage, data);
-                },
-            );
+            getBase64(event.currentTarget.files[0])
+                .then((imageData) => {
+                    editor.command(insertImage, imageData);
+                });
         }
 
         // Handle everything but list buttons.
@@ -433,8 +476,8 @@ class DemoEditor extends Component {
 
     saveData = () => {
         const { value } = this.state;
-        const data = JSON.stringify(value.toJSON())
-        localStorage.setItem('data', data);
+        const currentData = JSON.stringify(value.toJSON());
+        localStorage.setItem('data', currentData);
     }
 
     /**
@@ -449,6 +492,7 @@ class DemoEditor extends Component {
             openSettings,
             nodeLimit,
             saveButtonDisabled,
+            alert,
         } = this.state;
 
         return (
@@ -503,9 +547,11 @@ class DemoEditor extends Component {
                 <hr />
                 <button onClick={this.saveData} disabled={`${saveButtonDisabled ? 'disabled' : ''}`} type="button" className="btn btn-success float-right ml-2">Save</button>
                 <button type="button" className="btn btn-danger float-right">Cancel</button>
+                {alert}
             </div>
         );
     }
 }
 
-export default DemoEditor;
+// export default DemoEditor;
+export default withAlert(DemoEditor);

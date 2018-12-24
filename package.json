@@ -9,9 +9,13 @@
     "immutable": "^4.0.0-rc.12",
     "node-sass": "^4.11.0",
     "react": "^16.7.0",
+    "react-alert": "^4.0.4",
+    "react-alert-template-basic": "^1.0.0",
+    "react-bootstrap-sweetalert": "^4.4.1",
     "react-dom": "^16.7.0",
     "react-emotion": "^10.0.0",
     "react-scripts": "2.1.1",
+    "react-transition-group": "^2.5.2",
     "slate": "^0.44.9",
     "slate-react": "^0.21.15"
   },
