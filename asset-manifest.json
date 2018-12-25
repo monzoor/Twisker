@@ -1,13 +1,13 @@
 {
-  "main.css": "/twisker/static/css/main.da78aa43.chunk.css",
-  "main.js": "/twisker/static/js/main.06d0ec2c.chunk.js",
-  "main.js.map": "/twisker/static/js/main.06d0ec2c.chunk.js.map",
-  "static/js/1.f0a698be.chunk.js": "/twisker/static/js/1.f0a698be.chunk.js",
-  "static/js/1.f0a698be.chunk.js.map": "/twisker/static/js/1.f0a698be.chunk.js.map",
+  "main.css": "/twisker/static/css/main.a2f3e844.chunk.css",
+  "main.js": "/twisker/static/js/main.128c8782.chunk.js",
+  "main.js.map": "/twisker/static/js/main.128c8782.chunk.js.map",
+  "static/js/1.c0ee8824.chunk.js": "/twisker/static/js/1.c0ee8824.chunk.js",
+  "static/js/1.c0ee8824.chunk.js.map": "/twisker/static/js/1.c0ee8824.chunk.js.map",
   "runtime~main.js": "/twisker/static/js/runtime~main.87cb5368.js",
   "runtime~main.js.map": "/twisker/static/js/runtime~main.87cb5368.js.map",
-  "static/css/main.da78aa43.chunk.css.map": "/twisker/static/css/main.da78aa43.chunk.css.map",
+  "static/css/main.a2f3e844.chunk.css.map": "/twisker/static/css/main.a2f3e844.chunk.css.map",
   "index.html": "/twisker/index.html",
-  "precache-manifest.d9520d8b5624d21308e9696ee58d4391.js": "/twisker/precache-manifest.d9520d8b5624d21308e9696ee58d4391.js",
+  "precache-manifest.430c5f759532e7e73a6a5e69a6af38db.js": "/twisker/precache-manifest.430c5f759532e7e73a6a5e69a6af38db.js",
   "service-worker.js": "/twisker/service-worker.js"
 }

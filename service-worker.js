@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/twisker/precache-manifest.d9520d8b5624d21308e9696ee58d4391.js"
+  "/twisker/precache-manifest.430c5f759532e7e73a6a5e69a6af38db.js"
 );
 
 workbox.clientsClaim();
