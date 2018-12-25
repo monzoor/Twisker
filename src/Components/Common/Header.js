@@ -7,7 +7,7 @@ const Header = () => (
                 <p className="h5 font-weight-light">Twisker - Slate Demo </p>
                 <p className="small mb-0 font-weight-light">
                     Created By
-                    <b>Monzoor</b>
+                    <b> Monzoor</b>
                 </p>
             </div>
         </div>
